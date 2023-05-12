@@ -62,7 +62,7 @@ class View3D_OT_slvs_add_sketch(Operator, Operator3d):
     def fini(self, context: Context, succeed: bool):
         context.scene.sketcher.show_origin = False
         if hasattr(self, "target"):
-            logger.debug("Add: {}".format(self.target))
+            logger.debug(f"Add: {self.target}")
 
         if succeed:
             self.wp.visible = False

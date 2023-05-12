@@ -14,14 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 def select_invert(context: Context):
-    sketch = context.scene.sketcher.active_sketch
-    if sketch:
+    if sketch := context.scene.sketcher.active_sketch:
         logger.debug(
             f"Inverting selection of sketcher entities in sketch : {sketch.name} (slvs_index: {sketch.slvs_index})"
         )
         generator = sketch.sketch_entities(context)
     else:
-        logger.debug(f"Inverting selection of sketcher entities")
+        logger.debug("Inverting selection of sketcher entities")
         generator = entities_3d(context)
 
     for e in generator:
@@ -29,14 +28,13 @@ def select_invert(context: Context):
 
 
 def select_extend(context: Context):
-    sketch = context.scene.sketcher.active_sketch
-    if sketch:
+    if sketch := context.scene.sketcher.active_sketch:
         logger.debug(
             f"Extending chain selection of sketcher entities in sketch : {sketch.name} (slvs_index: {sketch.slvs_index})"
         )
         generator = sketch.sketch_entities(context)
     else:
-        logger.debug(f"Extending chain selection of sketcher entities")
+        logger.debug("Extending chain selection of sketcher entities")
         generator = entities_3d(context)
 
     to_select = []
@@ -130,7 +128,7 @@ def activate_sketch(context: Context, index: int, operator: Operator):
     if sketch_mode:
         sk = context.scene.sketcher.entities.get(index)
         if not sk:
-            operator.report({"ERROR"}, "Invalid index: {}".format(index))
+            operator.report({"ERROR"}, f"Invalid index: {index}")
             return {"CANCELLED"}
 
         # Align view to normal of wp
@@ -140,31 +138,29 @@ def activate_sketch(context: Context, index: int, operator: Operator):
             align_view(rv3d, matrix_start, matrix_target)
             rv3d.view_perspective = "ORTHO"
 
-    else:
-        # Reset view
-        if do_align_view:
-            rv3d.view_distance = 18
-            matrix_start = rv3d.view_matrix
-            matrix_default = Matrix(
+    elif do_align_view:
+        matrix_start = rv3d.view_matrix
+        matrix_default = Matrix(
+            (
                 (
-                    (
-                        0.4100283980369568,
-                        0.9119764566421509,
-                        -0.013264661654829979,
-                        0.0,
-                    ),
-                    (-0.4017425775527954, 0.19364342093467712, 0.8950449228286743, 0.0),
-                    (
-                        0.8188283443450928,
-                        -0.36166495084762573,
-                        0.44577890634536743,
-                        -17.986562728881836,
-                    ),
-                    (0.0, 0.0, 0.0, 1.0),
-                )
+                    0.4100283980369568,
+                    0.9119764566421509,
+                    -0.013264661654829979,
+                    0.0,
+                ),
+                (-0.4017425775527954, 0.19364342093467712, 0.8950449228286743, 0.0),
+                (
+                    0.8188283443450928,
+                    -0.36166495084762573,
+                    0.44577890634536743,
+                    -17.986562728881836,
+                ),
+                (0.0, 0.0, 0.0, 1.0),
             )
-            align_view(rv3d, matrix_start, matrix_default)
-            rv3d.view_perspective = "PERSP"
+        )
+        rv3d.view_distance = 18
+        align_view(rv3d, matrix_start, matrix_default)
+        rv3d.view_perspective = "PERSP"
 
     # Hide objects
     fade_objects = get_prefs().auto_hide_objects
@@ -172,7 +168,7 @@ def activate_sketch(context: Context, index: int, operator: Operator):
         space_data.shading.show_xray = sketch_mode
 
     last_sketch = context.scene.sketcher.active_sketch
-    logger.debug("Activate: {}".format(sk))
+    logger.debug(f"Activate: {sk}")
     props.active_sketch_i = index
     context.area.tag_redraw()
 

@@ -95,11 +95,8 @@ class View3D_OT_slvs_select_box(Operator):
         if mode == "SET":
             deselect_all(context)
 
-        value = True
         toggle = mode == "TOGGLE"
-        if mode == "SUBTRACT":
-            value = False
-
+        value = mode != "SUBTRACT"
         for e in entities:
             if toggle:
                 e.selected = not e.selected

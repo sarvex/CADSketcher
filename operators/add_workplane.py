@@ -90,11 +90,10 @@ class View3D_OT_slvs_add_workplane(Operator, Operator3d):
 
     def fini(self, context: Context, succeede: bool):
         if hasattr(self, "target"):
-            logger.debug("Add: {}".format(self.target))
+            logger.debug(f"Add: {self.target}")
 
-        if succeede:
-            if self.has_coincident:
-                solve_system(context)
+        if succeede and self.has_coincident:
+            solve_system(context)
 
 
 class View3D_OT_slvs_add_workplane_face(Operator, Operator3d):

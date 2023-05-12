@@ -29,10 +29,14 @@ class View3D_OT_slvs_set_all_constraints_visibility(Operator, HighlightElement):
 
     @classmethod
     def description(cls, context: Context, properties):
-        for vi in cls._visibility_items:
-            if vi[0] == properties.visibility:
-                return vi[2]
-        return None
+        return next(
+            (
+                vi[2]
+                for vi in cls._visibility_items
+                if vi[0] == properties.visibility
+            ),
+            None,
+        )
 
     def execute(self, context: Context):
         constraint_lists = context.scene.sketcher.constraints.get_lists()

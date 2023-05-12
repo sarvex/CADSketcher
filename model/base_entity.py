@@ -51,11 +51,7 @@ class SlvsGenericEntity:
         if not hasattr(self, "dependencies"):
             return False
         deps = self.dependencies()
-        for e in deps:
-            # NOTE: might has to ckech through deps recursively -> e.is_dirty
-            if e.dirty:
-                return True
-        return False
+        return any(e.dirty for e in deps)
 
     @is_dirty.setter
     def is_dirty(self, value: bool):
@@ -69,9 +65,7 @@ class SlvsGenericEntity:
 
     @property
     def _id_shader(self):
-        if self.is_point():
-            return Shaders.id_shader_3d()
-        return Shaders.id_line_3d()
+        return Shaders.id_shader_3d() if self.is_point() else Shaders.id_line_3d()
 
     @property
     def point_size(self):
@@ -84,9 +78,7 @@ class SlvsGenericEntity:
     @property
     def line_width(self):
         scale = preferences.get_scale()
-        if self.construction:
-            return 1.5 * scale
-        return 2 * scale
+        return 1.5 * scale if self.construction else 2 * scale
 
     @property
     def line_width_select(self):
@@ -94,7 +86,7 @@ class SlvsGenericEntity:
 
     def __str__(self):
         _, local_index = breakdown_index(self.slvs_index)
-        return "{}({})".format(self.__class__.__name__, str(local_index))
+        return f"{self.__class__.__name__}({str(local_index)})"
 
     @property
     def py_data(self):
@@ -109,9 +101,7 @@ class SlvsGenericEntity:
     @property
     def _batch(self):
         index = self.slvs_index
-        if index not in global_data.batches:
-            return None
-        return global_data.batches[index]
+        return None if index not in global_data.batches else global_data.batches[index]
 
     @_batch.setter
     def _batch(self, value):
@@ -126,10 +116,7 @@ class SlvsGenericEntity:
 
     @hover.setter
     def hover(self, value):
-        if value:
-            global_data.hover = self.slvs_index
-        else:
-            global_data.hover = -1
+        global_data.hover = self.slvs_index if value else -1
 
     @property
     def selected(self):
@@ -176,23 +163,13 @@ class SlvsGenericEntity:
         fixed = self.fixed
         origin = self.origin
 
-        if not active:
-            if highlight:
-                return ts.entity.highlight
-            if self.selected:
-                return ts.entity.inactive_selected
-            return ts.entity.inactive
-
-        elif self.selected:
-            if highlight:
-                return ts.entity.selected_highlight
-            return ts.entity.selected
-        elif highlight:
+        if not active and highlight or active and not self.selected and highlight:
             return ts.entity.highlight
-
-        if fixed and not origin:
-            return ts.entity.fixed
-        return ts.entity.default
+        elif not active:
+            return ts.entity.inactive_selected if self.selected else ts.entity.inactive
+        elif self.selected:
+            return ts.entity.selected_highlight if highlight else ts.entity.selected
+        return ts.entity.fixed if fixed and not origin else ts.entity.default
 
     @staticmethod
     def restore_opengl_defaults():
@@ -306,13 +283,13 @@ class SlvsGenericEntity:
 
         # Info block
         layout.separator()
-        layout.label(text="Type: " + type(self).__name__)
-        layout.label(text="Is Origin: " + str(self.origin))
+        layout.label(text=f"Type: {type(self).__name__}")
+        layout.label(text=f"Is Origin: {str(self.origin)}")
 
         if is_experimental:
             sub = layout.column()
             sub.scale_y = 0.8
-            sub.label(text="Index: " + str(self.slvs_index))
+            sub.label(text=f"Index: {str(self.slvs_index)}")
             sub.label(text="Dependencies:")
             for e in self.dependencies():
                 sub.label(text=str(e))

@@ -98,8 +98,7 @@ class Shaders:
     @classmethod
     @cache
     def id_line_3d(cls):
-        shader = cls.uniform_color_line_3d()
-        return shader
+        return cls.uniform_color_line_3d()
 
     @classmethod
     @cache

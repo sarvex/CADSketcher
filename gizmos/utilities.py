@@ -18,9 +18,7 @@ class Color(Enum):
 def get_constraint_color_type(constraint: GenericConstraint):
     if constraint.failed:
         return Color.Failed
-    if constraint.is_reference:
-        return Color.Reference
-    return Color.Default
+    return Color.Reference if constraint.is_reference else Color.Default
 
 
 def get_color(color_type: Color, highlit: bool):
@@ -44,9 +42,9 @@ def set_gizmo_colors(gz, constraint):
     color = get_color(color_type, highlit=False)
     color_highlight = get_color(color_type, highlit=True)
 
-    gz.color = color[0:-1]
+    gz.color = color[:-1]
     gz.alpha = color[-1]
-    gz.color_highlight = color_highlight[0:-1]
+    gz.color_highlight = color_highlight[:-1]
     gz.alpha_highlight = color_highlight[-1]
 
 

@@ -29,9 +29,9 @@ class ElementTypes(str, Enum):
 
 
 def _get_intersection_func(type_a, type_b):
-    if all([t == ElementTypes.Line for t in (type_a, type_b)]):
+    if all(t == ElementTypes.Line for t in (type_a, type_b)):
         return intersect_line_line_2d
-    if all([t == ElementTypes.Sphere for t in (type_a, type_b)]):
+    if all(t == ElementTypes.Sphere for t in (type_a, type_b)):
         return intersect_sphere_sphere_2d
     return intersect_line_sphere_2d
 
@@ -75,10 +75,7 @@ def _get_intersections(*element_list):
             func = _get_intersection_func(a[0], b[0])
             retval = to_list(func(*a[1], *b[1]))
 
-            for intr in retval:
-                if not intr:
-                    continue
-                intersections.append(intr)
+            intersections.extend(intr for intr in retval if intr)
     return intersections
 
 
@@ -113,13 +110,9 @@ class View3D_OT_slvs_bevel(Operator, Operator2d):
         point = self.p1
         radius = self.radius
 
-        # Get connected entities from point
-        connected = []
-        for e in (*sse.lines2D, *sse.arcs):
-            # TODO: Priorize non_construction entities
-            if point in e.connection_points():
-                connected.append(e)
-
+        connected = [
+            e for e in (*sse.lines2D, *sse.arcs) if point in e.connection_points()
+        ]
         if len(connected) != 2:
             self.report({"WARNING"}, "Point should have two connected segments")
             return False
@@ -155,7 +148,7 @@ class View3D_OT_slvs_bevel(Operator, Operator2d):
         # Get tangent points
         p1_co, p2_co = l1.project_point(coords), l2.project_point(coords)
 
-        if not all([co is not None for co in (p1_co, p2_co)]):
+        if any(co is None for co in (p1_co, p2_co)):
             return False
 
         self.points = (

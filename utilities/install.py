@@ -63,4 +63,3 @@ def show_package_info(package: str):
         subprocess.call([global_data.PYPATH, "-m", "pip", "show", package])
     except Exception as e:
         print(e)
-        pass

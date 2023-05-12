@@ -29,17 +29,17 @@ def add_builtin_handler(event: str, callback):
 
     global _builtin_handlers
     func = persistent(callback)
-    _builtin_handlers.setdefault(event, list()).append(func)
+    _builtin_handlers.setdefault(event, []).append(func)
 
 
 def register_handlers():
     global _builtin_handlers
     for handler_name in _builtin_handlers.keys():
-        msg = "Append <{}> builtin handlers: ".format(handler_name)
+        msg = f"Append <{handler_name}> builtin handlers: "
 
         for cb in _builtin_handlers[handler_name]:
             getattr(bpy.app.handlers, handler_name).append(cb)
-            msg += "\n  - {}".format(cb.__name__)
+            msg += f"\n  - {cb.__name__}"
 
         logger.debug(msg)
 
@@ -47,7 +47,7 @@ def register_handlers():
 def unregister_handlers():
     global _builtin_handlers
     for handler_name in _builtin_handlers.keys():
-        msg = "Remove <{}> builtin handlers: ".format(handler_name)
+        msg = f"Remove <{handler_name}> builtin handlers: "
 
         for cb in _builtin_handlers[handler_name]:
             handler_list = getattr(bpy.app.handlers, handler_name)
@@ -55,7 +55,7 @@ def unregister_handlers():
             if cb not in handler_list:
                 continue
 
-            msg += "\n  - {}".format(cb.__name__)
+            msg += f"\n  - {cb.__name__}"
             handler_list.remove(cb)
 
         logger.debug(msg)

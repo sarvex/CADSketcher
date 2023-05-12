@@ -65,8 +65,7 @@ class View3D_OT_slvs_add_arc2d(Operator, Operator2d):
         # Get radius from distance ct - p1
         p1 = self.get_point(context, 1).co
         radius = (p1 - ct).length
-        pos = pol2cart(radius, angle) + ct
-        return pos
+        return pol2cart(radius, angle) + ct
 
     def solve_state(self, context: Context, _event: Event):
         sketch = context.scene.sketcher.active_sketch
@@ -97,7 +96,7 @@ class View3D_OT_slvs_add_arc2d(Operator, Operator2d):
 
     def fini(self, context: Context, succeede: bool):
         if hasattr(self, "target"):
-            logger.debug("Add: {}".format(self.target))
+            logger.debug(f"Add: {self.target}")
             self.solve_state(context, self.sketch)
 
 

@@ -13,7 +13,7 @@ def get_addon_version():
 def write_addon_version(context):
     version = get_addon_version()
 
-    logger.debug("Writing addon version: " + str(version))
+    logger.debug(f"Writing addon version: {str(version)}")
 
     # NOTE: Version is written to every scene because there's no global
     # place we can put this value
@@ -35,11 +35,11 @@ def recalc_pointers(scene):
         scene.sketcher.entities.recalc_type_index(e)
 
         if i != e.slvs_index:
-            msg += "\n - {}: {} -> {}".format(e, i, e.slvs_index)
+            msg += f"\n - {e}: {i} -> {e.slvs_index}"
             update_pointers(scene, i, e.slvs_index)
 
     if msg:
-        logger.debug("Update entity indices:" + msg)
+        logger.debug(f"Update entity indices:{msg}")
 
 
 def do_versioning(self):
@@ -60,7 +60,7 @@ def do_versioning(self):
 
     # NOTE: Versioning is done per scene
 
-    msg = "\nUpdate existing file to version {}".format(current_addon_version)
+    msg = f"\nUpdate existing file to version {current_addon_version}"
     context = bpy.context
 
     current_version = get_addon_version()
@@ -75,13 +75,11 @@ def do_versioning(self):
 
         if version > current_version:
             logger.warning(
-                "Scene {} was saved with a newer version of the addon".format(
-                    scene.name
-                )
+                f"Scene {scene.name} was saved with a newer version of the addon"
             )
             continue
 
-        msg += "\n  - Update scene <{}> from version {}".format(scene.name, version)
+        msg += f"\n  - Update scene <{scene.name}> from version {version}"
 
         # if version <= (0, 11, 0):
         # apply some changes that were introduced in v(0, 11, 0)
@@ -101,11 +99,7 @@ def do_versioning(self):
                 if c.is_reference:
                     continue
 
-                msg += (
-                    "\n Make supplementary angle constraint reference only: {}".format(
-                        repr(c)
-                    )
-                )
+                msg += f"\n Make supplementary angle constraint reference only: {repr(c)}"
                 c.is_reference = True
 
     logger.debug(msg)

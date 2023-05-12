@@ -39,7 +39,7 @@ def _inches_to_fraction(inches: float, precision: int) -> typing.Tuple[int, int,
     part, numerator and denominator (all integers), rounded to precision
     (expressed as 1/n'th of an inch).
     """
-    inches_ = round(inches * int(precision)) / float(precision)
+    inches_ = round(inches * precision) / float(precision)
     frac, int_ = math.modf(inches_)
     num, denom = frac.as_integer_ratio()
     return (int(int_), num, denom)
@@ -87,17 +87,13 @@ def _format_imperial_length(value, precision, unit_length="INCH") -> str:
         else:
             feet = 0
         if feet > 0 and num > 0:
-            return "{}′ {}-{}⁄{}″".format(feet, inches, num, denom)
+            return f"{feet}′ {inches}-{num}⁄{denom}″"
         elif feet > 0:
-            return "{}′ {}″".format(feet, inches)
+            return f"{feet}′ {inches}″"
         elif num > 0:
-            return "{}-{}⁄{}″".format(inches, num, denom)
+            return f"{inches}-{num}⁄{denom}″"
         else:
-            return "{}″".format(inches)
-    elif unit_length == "MILES":
-        pass
-    elif unit_length == "THOU":
-        pass
+            return f"{inches}″"
     # Adaptive
     return bpy.utils.units.to_string(
         "IMPERIAL",
@@ -125,24 +121,8 @@ def format_distance(distance: float, hide_units=False, use_unit_scale=True) -> s
     unit_scale = scene.unit_settings.scale_length
     if use_unit_scale:
         distance *= unit_scale
-    if unit_system == "METRIC":
-        precision = prefs.decimal_precision
-        if not separate_units and not unit_length == "ADAPTIVE":
-            return _format_metric_length(distance, precision, unit_length, hide_units)
-        # If unit_length is 'Adaptive' or `separate_units` is True, use Blender
-        # built-in which means units are always shown (regardless of
-        # `hide_units`)
-        return bpy.utils.units.to_string(
-            "METRIC",
-            "LENGTH",
-            distance,
-            precision=precision,
-            split_unit=separate_units,
-            compatible_unit=False,
-        )
-
-    elif unit_system == "IMPERIAL":
-        if not unit_length == "ADAPTIVE":
+    if unit_system == "IMPERIAL":
+        if unit_length != "ADAPTIVE":
             precision = prefs.imperial_precision
             return _format_imperial_length(distance, precision, unit_length)
         return bpy.utils.units.to_string(
@@ -153,6 +133,20 @@ def format_distance(distance: float, hide_units=False, use_unit_scale=True) -> s
             compatible_unit=False,
         )
 
+    elif unit_system == "METRIC":
+        precision = prefs.decimal_precision
+        return (
+            _format_metric_length(distance, precision, unit_length, hide_units)
+            if not separate_units and unit_length != "ADAPTIVE"
+            else bpy.utils.units.to_string(
+                "METRIC",
+                "LENGTH",
+                distance,
+                precision=precision,
+                split_unit=separate_units,
+                compatible_unit=False,
+            )
+        )
     return bpy.utils.units.to_string(
         "NONE", "LENGTH", distance, split_unit=separate_units, compatible_unit=False
     )

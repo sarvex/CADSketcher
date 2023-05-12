@@ -86,10 +86,7 @@ class SlvsLine2D(Entity2D, PropertyGroup):
 
     def direction(self, point, is_endpoint=False):
         """Returns the direction of the line, true if inverted"""
-        if is_endpoint:
-            return point == self.p1
-        else:
-            return point == self.p2
+        return point == self.p1 if is_endpoint else point == self.p2
 
     def connection_angle(self, other, **kwargs):
         """Returns the angle at the connection point between the two entities
@@ -101,7 +98,7 @@ class SlvsLine2D(Entity2D, PropertyGroup):
         if self.is_3d() or other.is_3d():
             return None
 
-        if not all([e.is_line() for e in (self, other)]):
+        if not all(e.is_line() for e in (self, other)):
             return other.connection_angle(self, **kwargs)
 
         point = get_connection_point(
@@ -158,14 +155,10 @@ class SlvsLine2D(Entity2D, PropertyGroup):
     def overlaps_endpoint(self, co):
         precision = 5
         co_rounded = round_v(co, ndigits=precision)
-        if any(
-            [
-                co_rounded == round_v(v, ndigits=precision)
-                for v in (self.p1.co, self.p2.co)
-            ]
-        ):
-            return True
-        return False
+        return any(
+            co_rounded == round_v(v, ndigits=precision)
+            for v in (self.p1.co, self.p2.co)
+        )
 
     def intersect(self, other):
         # NOTE: There can be multiple intersections when intersecting with one or more curves
@@ -207,9 +200,7 @@ class SlvsLine2D(Entity2D, PropertyGroup):
         len_2 = (p2 - start).length
 
         threshold = 0.0000001
-        retval = (len_1 + len_2) % (self.length + threshold)
-
-        return retval
+        return (len_1 + len_2) % (self.length + threshold)
 
     def replace_point(self, old, new):
         for ptr in ("p1", "p2"):

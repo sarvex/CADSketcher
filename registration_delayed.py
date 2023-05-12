@@ -16,6 +16,5 @@ def register():
 
 
 def unregister():
-    handle = global_data.draw_handle
-    if handle:
+    if handle := global_data.draw_handle:
         bpy.types.SpaceView3D.draw_handler_remove(handle, "WINDOW")

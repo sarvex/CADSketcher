@@ -58,54 +58,50 @@ class VIEW3D_GT_slvs_diameter(Gizmo, ConstraintGizmoGeneric):
         if constr.setting:
             # RADIUS_MODE:
             #   drawn inside and outside as a single segment
-            if constr.text_inside():
-                coords = (
+            coords = (
+                (
                     *draw_arrow_shape(
                         p2, pol2cart(dist - arrow_2[0], angle), arrow_2[1]
                     ),
                     p2,
                     (0, 0),
                 )
-            else:
-                coords = (
+                if constr.text_inside()
+                else (
                     *draw_arrow_shape(
                         p2, pol2cart(arrow_2[0] + dist, angle), arrow_2[1]
                     ),
                     p2,
                     pol2cart(offset, angle),
                 )
-
+            )
+        elif constr.text_inside():
+            coords = (
+                *draw_arrow_shape(
+                    p1, pol2cart(arrow_2[0] - dist, angle), arrow_2[1]
+                ),
+                p1,
+                p2,
+                *draw_arrow_shape(
+                    p2, pol2cart(dist - arrow_2[0], angle), arrow_2[1]
+                ),
+            )
         else:
-            # DIAMETER_MODE:
-            #   drawn inside as a single segment
-            #   drawn outside as a 2-segment gizmo
-            if constr.text_inside():
-                coords = (
-                    *draw_arrow_shape(
-                        p1, pol2cart(arrow_2[0] - dist, angle), arrow_2[1]
-                    ),
+            coords = (
+                *draw_arrow_shape(
+                    p2, pol2cart(arrow_1[0] + dist, angle), arrow_1[1]
+                ),
+                p2,
+                pol2cart(offset, angle),
+                pol2cart(
+                    dist + (3 * arrow_2[0]), angle + HALF_TURN
+                ),  # limit length to 3 arrowheads
+                p1,
+                *draw_arrow_shape(
                     p1,
-                    p2,
-                    *draw_arrow_shape(
-                        p2, pol2cart(dist - arrow_2[0], angle), arrow_2[1]
-                    ),
-                )
-            else:
-                coords = (
-                    *draw_arrow_shape(
-                        p2, pol2cart(arrow_1[0] + dist, angle), arrow_1[1]
-                    ),
-                    p2,
-                    pol2cart(offset, angle),
-                    pol2cart(
-                        dist + (3 * arrow_2[0]), angle + HALF_TURN
-                    ),  # limit length to 3 arrowheads
-                    p1,
-                    *draw_arrow_shape(
-                        p1,
-                        pol2cart(dist + arrow_2[0], angle + HALF_TURN),
-                        arrow_2[1],
-                    ),
-                )
+                    pol2cart(dist + arrow_2[0], angle + HALF_TURN),
+                    arrow_2[1],
+                ),
+            )
 
         self.custom_shape = self.new_custom_shape("LINES", coords)

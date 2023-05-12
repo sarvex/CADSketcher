@@ -48,7 +48,7 @@ class View3D_OT_slvs_install_package(Operator):
                 )
             show_package_info("py_slvs")
         else:
-            self.report({"WARNING"}, "Cannot install package: {}".format(self.package))
+            self.report({"WARNING"}, f"Cannot install package: {self.package}")
             return {"CANCELLED"}
         return {"FINISHED"}
 

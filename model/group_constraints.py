@@ -66,10 +66,14 @@ class SlvsConstraints(PropertyGroup):
 
     @classmethod
     def cls_from_type(cls, type: str):
-        for constraint in cls._constraints:
-            if type == constraint.type:
-                return constraint
-        return None
+        return next(
+            (
+                constraint
+                for constraint in cls._constraints
+                if type == constraint.type
+            ),
+            None,
+        )
 
     def new_from_type(self, type: str) -> GenericConstraint:
         """Create a constraint by type.
@@ -104,9 +108,7 @@ class SlvsConstraints(PropertyGroup):
             GenericConstraint: Constraint with the given type and index or None if not found.
         """
         list = getattr(self, type.lower())
-        if not list or index >= len(list):
-            return None
-        return list[index]
+        return None if not list or index >= len(list) else list[index]
 
     def get_index(self, constr: GenericConstraint) -> int:
         """Get the index of a constraint in its collection.
@@ -118,10 +120,7 @@ class SlvsConstraints(PropertyGroup):
             int: Index of the constraint or -1 if not found.
         """
         list = getattr(self, constr.type.lower())
-        for i, item in enumerate(list):
-            if item == constr:
-                return i
-        return -1
+        return next((i for i, item in enumerate(list) if item == constr), -1)
 
     def remove(self, constr: GenericConstraint):
         """Remove a constraint.
@@ -135,20 +134,17 @@ class SlvsConstraints(PropertyGroup):
     @property
     def dimensional(self):
         for constraint_type in self._dimensional_constraints:
-            for entity in self.get_list(constraint_type.type):
-                yield entity
+            yield from self.get_list(constraint_type.type)
 
     @property
     def geometric(self):
         for constraint_type in self._geometric_constraints:
-            for entity in self.get_list(constraint_type.type):
-                yield entity
+            yield from self.get_list(constraint_type.type)
 
     @property
     def all(self):
         for entity_list in self.get_lists():
-            for entity in entity_list:
-                yield entity
+            yield from entity_list
 
     def add_coincident(
         self,
@@ -167,7 +163,7 @@ class SlvsConstraints(PropertyGroup):
             SlvsCoincident: The created constraint.
         """
 
-        if all([e.is_point() for e in (entity1, entity2)]):
+        if all(e.is_point() for e in (entity1, entity2)):
             # TODO: Implicitly merge points
             return
 

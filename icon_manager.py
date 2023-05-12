@@ -102,10 +102,7 @@ def get_constraint_icon(operator: str):
 
     icon = preview_icons.get(operator)
 
-    if not icon:
-        return -1
-
-    return icon.icon_id
+    return -1 if not icon else icon.icon_id
 
 
 def draw(type, color):

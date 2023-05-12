@@ -22,19 +22,13 @@ class bpyEnum:
     ):
         self.data = data
 
-        if not identifier:
-            self.identifier = self._get_identifier(index)
-        else:
-            self.identifier = identifier
+        self.identifier = self._get_identifier(index) if not identifier else identifier
         item = self._get_active_item()
 
         self.name = item[1]
         self.description = item[2]
         self.index = item[-1]
-        if len(item) == 5:
-            icon = item[3]
-        else:
-            icon = None
+        icon = item[3] if len(item) == 5 else None
         self.icon = icon
 
     def _get_active_item(self):
@@ -42,9 +36,7 @@ class bpyEnum:
         return self.data[i]
 
     def _get_item_index(self, item):
-        if len(item) > 3:
-            return item[-1]
-        return self.data.index(item)
+        return item[-1] if len(item) > 3 else self.data.index(item)
 
     def _get_identifier(self, index):
         i = [self._get_item_index(item) for item in self.data].index(index)
@@ -65,7 +57,7 @@ def unique_attribute_setter(self, name: str, value: Any):
         match = re.match("(.*)\[\d*\]", path)
         parent = self.id_data
         try:
-            coll_path = match.group(1)
+            coll_path = match[1]
         except AttributeError:
             raise TypeError("Property not element in a collection.")
         else:
@@ -96,11 +88,7 @@ def unique_attribute_setter(self, name: str, value: Any):
 
     # see if value is already in a format like 'name.012'
     match = re.match(r"(.*)\.(\d{3,})", value)
-    if match is None:
-        stem, nbr = value, 1
-    else:
-        stem, nbr = match.groups()
-
+    stem, nbr = (value, 1) if match is None else match.groups()
     # check for each value if in collection
     new_value = new_val(stem, nbr)
     while new_value in coll:

@@ -84,11 +84,7 @@ class SlvsCircle(Entity2D, PropertyGroup):
         self.param = solvesys.addParamV(self.radius, group)
 
         nm = None
-        if self.nm != -1:
-            nm = self.nm
-        else:
-            nm = self.wp.nm
-
+        nm = self.nm if self.nm != -1 else self.wp.nm
         handle = solvesys.addCircle(
             self.ct.py_data,
             self.nm.py_data,
@@ -211,8 +207,7 @@ class SlvsCircle(Entity2D, PropertyGroup):
         ct = self.ct.co
         start, end = p1 - ct, p2 - ct
         angle = range_2pi(math.atan2(*end.yx) - math.atan2(*start.yx))
-        retval = self.radius * angle
-        return retval
+        return self.radius * angle
 
 
 slvs_entity_pointer(SlvsCircle, "nm")

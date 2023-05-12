@@ -51,11 +51,10 @@ class View3D_OT_slvs_add_point2d(Operator, Operator2d):
 
     def fini(self, context: Context, succeede: bool):
         if hasattr(self, "target"):
-            logger.debug("Add: {}".format(self.target))
+            logger.debug(f"Add: {self.target}")
 
-        if succeede:
-            if self.has_coincident:
-                solve_system(context, sketch=self.sketch)
+        if succeede and self.has_coincident:
+            solve_system(context, sketch=self.sketch)
 
 
 register, unregister = register_stateops_factory((View3D_OT_slvs_add_point2d,))

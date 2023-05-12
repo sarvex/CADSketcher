@@ -15,10 +15,7 @@ class View3D_OT_slvs_solve(Operator):
     def execute(self, context: Context):
         sketch = context.scene.sketcher.active_sketch
         solver = Solver(context, sketch, all=self.all)
-        ok = solver.solve()
-
-        # Keep messages simple, sketches are marked with solvestate
-        if ok:
+        if ok := solver.solve():
             self.report({"INFO"}, "Successfully solved")
         else:
             self.report({"WARNING"}, "Solver failed")

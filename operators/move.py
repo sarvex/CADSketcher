@@ -22,11 +22,7 @@ def get_points(context: Context):
         points.append(p)
 
     def is_point2d(e):
-        if not e.is_2d():
-            return False
-        if not e.is_point():
-            return False
-        return True
+        return False if not e.is_2d() else bool(e.is_point())
 
     for entity in entities:
         if not entity:
@@ -75,11 +71,7 @@ class View3D_OT_slvs_move(Operator, Operator2d):
     def get_offset(self, context: Context, coords):
         wp = self.sketch.wp
         pos = get_pos_2d(context, wp, coords)
-        if pos is None:
-            return None
-
-        delta = Vector(pos) - self.origin_coords
-        return delta
+        return None if pos is None else Vector(pos) - self.origin_coords
 
     def main(self, context: Context):
         points = get_points(context)

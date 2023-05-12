@@ -10,11 +10,13 @@ def to_list(value):
     """Ensure value is of type list"""
     if value is None:
         return []
-    if type(value) in (list, tuple):
-        return list(value)
-    return [
-        value,
-    ]
+    return (
+        list(value)
+        if type(value) in (list, tuple)
+        else [
+            value,
+        ]
+    )
 
 
 def get_flat_deps(entity: SlvsGenericEntity):
@@ -42,7 +44,7 @@ def get_collective_dependencies(
 ) -> List[SlvsGenericEntity]:
     """Returns a list of entities along with their dependencies"""
     deps = entities
-    for entity in entities:
+    for entity in deps:
         for dep in get_flat_deps(entity):
             if dep in deps:
                 continue
@@ -68,10 +70,10 @@ def get_entity_deps(
 
 
 def _is_referenced_by_constraint(entity, context):
-    for c in context.scene.sketcher.constraints.all:
-        if entity in c.dependencies():
-            return True
-    return False
+    return any(
+        entity in c.dependencies()
+        for c in context.scene.sketcher.constraints.all
+    )
 
 
 def is_entity_dependency(entity: SlvsGenericEntity, context: Context) -> bool:
@@ -88,9 +90,7 @@ def is_entity_referenced(entity: SlvsGenericEntity, context: Context) -> bool:
     """Checks if the entity is referenced from anywhere"""
     if is_entity_dependency(entity, context):
         return True
-    if _is_referenced_by_constraint(entity, context):
-        return True
-    return False
+    return bool(_is_referenced_by_constraint(entity, context))
 
 
 def get_sketch_deps_indicies(sketch: SlvsSketch, context: Context):
@@ -124,12 +124,11 @@ def get_scoped_constraints(
 ) -> List[GenericConstraint]:
     """Return a list of constraints that are in the scope of a set of entities"""
 
-    constraints = []
-    for constraint in context.scene.sketcher.constraints.all:
-        if not all([e in entities for e in constraint.entities()]):
-            continue
-        constraints.append(constraint)
-    return constraints
+    return [
+        constraint
+        for constraint in context.scene.sketcher.constraints.all
+        if all(e in entities for e in constraint.entities())
+    ]
 
 
 def entities_3d(context: Context) -> Generator[SlvsGenericEntity, None, None]:

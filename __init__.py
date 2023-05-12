@@ -38,7 +38,7 @@ def register():
     update_logger(logger)
     icon_manager.load()
 
-    logger.info("Enabled CAD Sketcher base, version: {}".format(bl_info["version"]))
+    logger.info(f'Enabled CAD Sketcher base, version: {bl_info["version"]}')
 
     # Check Module and register all modules
     try:

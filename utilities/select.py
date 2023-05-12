@@ -10,14 +10,13 @@ logger = logging.getLogger(__name__)
 
 
 def select_all(context: Context):
-    sketch = context.scene.sketcher.active_sketch
-    if sketch:
+    if sketch := context.scene.sketcher.active_sketch:
         logger.debug(
             f"Selecting all sketcher entities in sketch : {sketch.name} (slvs_index: {sketch.slvs_index})"
         )
         generator = sketch.sketch_entities(context)
     else:
-        logger.debug(f"Selecting all sketcher entities")
+        logger.debug("Selecting all sketcher entities")
         generator = entities_3d(context)
 
     for e in generator:

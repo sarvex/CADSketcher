@@ -45,10 +45,10 @@ class SlvsEqual(GenericConstraint, PropertyGroup):
         func = None
         set_wp = False
 
-        if all([type(e) in LINE for e in (e1, e2)]):
+        if all(type(e) in LINE for e in (e1, e2)):
             func = solvesys.addEqualLength
             set_wp = True
-        elif all([type(e) in CURVE for e in (e1, e2)]):
+        elif all(type(e) in CURVE for e in (e1, e2)):
             func = solvesys.addEqualRadius
         else:
             func = solvesys.addEqualLineArcLength

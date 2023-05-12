@@ -56,8 +56,6 @@ class View3D_OT_slvs_copy(Operator):
             return {"CANCELLED"}
 
         sse = context.scene.sketcher.entities
-        buffer = {"entities": {}, "constraints": {}}
-
         # Get the whole scene dictionary representation
         scene_dict = context.scene["sketcher"].to_dict()
 
@@ -68,11 +66,14 @@ class View3D_OT_slvs_copy(Operator):
             )
         )
 
-        # Get filtered entities dictionary based on selected entities and their dependencies
-        buffer["entities"] = _filter_elements_dict(
-            context.scene.sketcher.entities, scene_dict["entities"], dependencies
-        )
-
+        buffer = {
+            "constraints": {},
+            "entities": _filter_elements_dict(
+                context.scene.sketcher.entities,
+                scene_dict["entities"],
+                dependencies,
+            ),
+        }
         # Get filtered constraints dictionary based on selected entities and their dependencies
         constraints = get_scoped_constraints(context, dependencies)
         buffer["constraints"] = _filter_elements_dict(
@@ -99,7 +100,7 @@ class View3D_OT_slvs_paste(Operator):
 
         # Replace sketch indices with active sketch
         for element in iter_elements_dict(buffer):
-            if not "sketch_i" in element.keys():
+            if "sketch_i" not in element.keys():
                 continue
             element["sketch_i"] = context.scene.sketcher.active_sketch_i
 
@@ -108,14 +109,12 @@ class View3D_OT_slvs_paste(Operator):
 
         # Select all pasted entities
         for element in iter_elements_dict(buffer):
-            if not "slvs_index" in element.keys():
+            if "slvs_index" not in element.keys():
                 continue
 
             index = element["slvs_index"]
-            entity = context.scene.sketcher.entities.get(index)
-            if not entity:
-                continue
-            entity.selected = True
+            if entity := context.scene.sketcher.entities.get(index):
+                entity.selected = True
 
         context.area.tag_redraw()
         bpy.ops.view3d.slvs_move("INVOKE_DEFAULT")

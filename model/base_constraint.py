@@ -30,7 +30,7 @@ class GenericConstraint:
     signature = ()
     props = ()
 
-    def needs_wp(args):
+    def needs_wp(self):
         return WpReq.OPTIONAL
 
     def __str__(self):
@@ -40,10 +40,7 @@ class GenericConstraint:
         # NOTE: this could also check through the constraints entity workplanes
         needs_wp = self.needs_wp()
 
-        workplane = None
-        if self.sketch_i != -1:
-            workplane = self.sketch.wp
-
+        workplane = self.sketch.wp if self.sketch_i != -1 else None
         if workplane and needs_wp != WpReq.FREE:
             return workplane.py_data
         elif needs_wp == WpReq.NOT_FREE:
@@ -58,17 +55,14 @@ class GenericConstraint:
         for prop_name in dir(self):
             if prop_name.endswith("_i") or not prop_name.startswith("entity"):
                 continue
-            entity = getattr(self, prop_name)
-            if not entity:
-                continue
-            props.append(entity)
+            if entity := getattr(self, prop_name):
+                props.append(entity)
         return props
 
     def dependencies(self) -> List[SlvsGenericEntity]:
         deps = self.entities()
         if hasattr(self, "sketch"):
-            s = self.sketch
-            if s:
+            if s := self.sketch:
                 deps.append(s)
         return deps
 
@@ -102,10 +96,7 @@ class GenericConstraint:
         show_inactive = not preferences.use_experimental(
             "hide_inactive_constraints", True
         )
-        if show_inactive:  # and self.is_visible(context)
-            return True
-
-        return self.sketch == active_sketch
+        return True if show_inactive else self.sketch == active_sketch
 
     def draw_plane(self):
         if self.sketch_i != -1:
@@ -246,9 +237,7 @@ class DimensionalConstraint(GenericConstraint):
         return displayed_value
 
     def py_data(self, solvesys, **kwargs):
-        if self.is_reference:
-            return []
-        return self.create_slvs_data(solvesys, **kwargs)
+        return [] if self.is_reference else self.create_slvs_data(solvesys, **kwargs)
 
     def draw_props(self, layout: UILayout):
         sub = GenericConstraint.draw_props(self, layout)

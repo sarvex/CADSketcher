@@ -20,9 +20,9 @@ def setup_logger(logger):
     stream_handler.setFormatter(formatter)
     logger.addHandler(stream_handler)
 
-    filepath = Path(gettempdir()) / (get_name() + f"-{getpass.getuser()}" + ".log")
+    filepath = Path(gettempdir()) / f"{get_name()}-{getpass.getuser()}.log"
 
-    logger.info("Logging into: " + str(filepath))
+    logger.info(f"Logging into: {str(filepath)}")
 
     # Add file handler
     try:

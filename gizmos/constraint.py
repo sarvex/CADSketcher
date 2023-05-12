@@ -22,11 +22,11 @@ def _get_formatted_value(context, constr):
     value = constr.value
 
     if unit == "LENGTH":
-        if constr.type == "DIAMETER" and constr.setting:
-            s = "R" + units.format_distance(value)
-        else:
-            s = units.format_distance(value)
-        return s
+        return (
+            f"R{units.format_distance(value)}"
+            if constr.type == "DIAMETER" and constr.setting
+            else units.format_distance(value)
+        )
     elif unit == "ROTATION":
         return units.format_angle(value)
     return ""
@@ -151,9 +151,7 @@ class VIEW3D_GT_slvs_constraint(ConstraintGizmo, Gizmo):
         location -= self.matrix_basis.translation
         location *= 1.0 / self.scale_basis
 
-        if math.pow(location.length, 2) < 1.0:
-            return 0
-        return -1
+        return 0 if math.pow(location.length, 2) < 1.0 else -1
 
     def draw(self, context):
         constraint = self._get_constraint(context)

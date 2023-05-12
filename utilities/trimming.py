@@ -50,7 +50,7 @@ class Intersection:
         return self._point
 
     def __str__(self):
-        return "Intersection {}, {}, {}".format(self.index, self.co, self.element)
+        return f"Intersection {self.index}, {self.co}, {self.element}"
 
 
 class TrimSegment:
@@ -78,7 +78,7 @@ class TrimSegment:
 
     def check(self):
         relevant = self.relevant_intersections()
-        return len(relevant) in (2, 4)
+        return len(relevant) in {2, 4}
 
     def _sorted(self):
         # Return intersections sorted by distance from mousepos
@@ -112,9 +112,11 @@ class TrimSegment:
                 relevant.append(intr)
 
             if intr.index in closest:
-                if intr.is_constraint():
-                    if intr not in self.obsolete_intersections:
-                        self.obsolete_intersections.append(intr)
+                if (
+                    intr.is_constraint()
+                    and intr not in self.obsolete_intersections
+                ):
+                    self.obsolete_intersections.append(intr)
                 relevant.append(intr)
 
         def _get_log_msg():
@@ -152,9 +154,7 @@ class TrimSegment:
 
         # Create new segments
         segment_count = len(relevant) // 2
-        for index, intrs in enumerate(
-            [relevant[i * 2 : i * 2 + 2] for i in range(segment_count)]
-        ):
+        for index, intrs in enumerate(relevant[i * 2 : i * 2 + 2] for i in range(segment_count)):
             reuse_segment = index == 0 and not isinstance(self.segment, SlvsCircle)
             intr_1, intr_2 = intrs
             if not intr_1:

@@ -52,6 +52,5 @@ def state_from_args(name: str, **kwargs):
         "create_element": None,
         "use_interactive_placemenet": True,
         "check_pointer": None,
-    }
-    kw.update(kwargs)
+    } | kwargs
     return OperatorState(**kw)

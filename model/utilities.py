@@ -10,20 +10,19 @@ logger = logging.getLogger(__name__)
 
 
 def slvs_entity_pointer(cls, name, **kwargs):
-    index_prop = name + "_i"
+    index_prop = f"{name}_i"
     annotations = {}
     if hasattr(cls, "__annotations__"):
         annotations = cls.__annotations__.copy()
-    annotations[index_prop] = IntProperty(name=name + " index", default=-1, **kwargs)
+    annotations[index_prop] = IntProperty(
+        name=f"{name} index", default=-1, **kwargs
+    )
     setattr(cls, "__annotations__", annotations)
 
     @property
     def func(self):
         index = getattr(self, index_prop)
-        if index == -1:
-            return None
-        else:
-            return bpy.context.scene.sketcher.entities.get(index)
+        return None if index == -1 else bpy.context.scene.sketcher.entities.get(index)
 
     setattr(cls, name, func)
 
@@ -40,9 +39,7 @@ def tag_update(self, context: Context):
 
 
 def round_v(vec, ndigits=None):
-    values = []
-    for v in vec:
-        values.append(round(v, ndigits=ndigits))
+    values = [round(v, ndigits=ndigits) for v in vec]
     return Vector(values)
 
 
@@ -60,11 +57,7 @@ def get_bezier_curve_midpoint_positions(
     if segment_count == 1:
         return []
 
-    if cyclic:
-        point_count = segment_count
-    else:
-        point_count = segment_count - 1
-
+    point_count = segment_count if cyclic else segment_count - 1
     a = angle / segment_count
     for i in range(point_count):
         pos = curve_element.point_on_curve(a * (i + 1))
@@ -144,15 +137,13 @@ def make_coincident(solvesys, point_handle, e2, wp, group, entity_type=None):
 
 def update_pointers(scene, index_old, index_new):
     """Replaces all references to an entity index with its new index"""
-    logger.debug("Update references {} -> {}".format(index_old, index_new))
+    logger.debug(f"Update references {index_old} -> {index_new}")
     # NOTE: this should go through all entity pointers and update them if necessary.
     # It might be possible to use the msgbus to notify and update the IntProperty pointers
 
     if scene.sketcher.active_sketch_i == index_old:
         logger.debug(
-            "Update reference {} of {} to {}: ".format(
-                "active_sketch", scene.sketcher, index_new
-            )
+            f"Update reference active_sketch of {scene.sketcher} to {index_new}: "
         )
         scene.sketcher.active_sketch_i = index_new
 

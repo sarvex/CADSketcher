@@ -28,9 +28,7 @@ class Solver:
         self.failed_sketches = []
 
         group = self._get_group(sketch) if sketch else self.group_3d
-        logger.info(
-            "--- Start solving ---\nAll:{}, Sketch:{}, g:{}".format(all, sketch, group)
-        )
+        logger.info(f"--- Start solving ---\nAll:{all}, Sketch:{sketch}, g:{group}")
         from py_slvs import slvs
 
         self.solvesys = slvs.System()
@@ -42,9 +40,7 @@ class Solver:
         self.result = None
 
     def get_workplane(self):
-        if self.sketch:
-            return self.sketch.wp.py_data
-        return self.FREE_IN_3D
+        return self.sketch.wp.py_data if self.sketch else self.FREE_IN_3D
 
     def _store_constraint_indices(self, c, indices):
         for i in indices:
@@ -136,7 +132,7 @@ class Solver:
         logger.debug(_get_msg_constraints())
 
     def tweak(self, entity, pos):
-        logger.debug("tweak: {} to: {}".format(entity, pos))
+        logger.debug(f"tweak: {entity} to: {pos}")
 
         self.tweak_entity = entity
 
@@ -144,9 +140,7 @@ class Solver:
         self.tweak_pos = pos
 
     def is_active(self, e):
-        if e.fixed:
-            return False
-        return e.is_active(self.sketch)
+        return False if e.fixed else e.is_active(self.sketch)
 
     # NOTE: When solving not everything might be relevant...
     # An approach could be to find all constraints of a sketch and all necessary entities
@@ -184,11 +178,7 @@ class Solver:
     #     return constraints
 
     def needs_update(self, e):
-        if hasattr(e, "sketch") and e.sketch in self.failed_sketches:
-            # Skip entities that belong to a failed sketch
-            return False
-        # TODO: skip entities that aren't in active group
-        return True
+        return not hasattr(e, "sketch") or e.sketch not in self.failed_sketches
 
     def solve(self, report=True):
         self.report = report
@@ -219,7 +209,7 @@ class Solver:
                 sketch.solver_state = self.result.index
                 sketch.dof = self.solvesys.Dof
 
-            if retval != 0 and retval != 5:
+            if retval not in [0, 5]:
                 self.ok = False
 
                 # Store sketch failures

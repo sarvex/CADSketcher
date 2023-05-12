@@ -13,12 +13,7 @@ def _get_key_hint(kmi: KeyMapItem) -> List[str]:
 
     modifiers = {"ctrl": "Ctrl", "alt": "Alt", "shift": "Shift"}
 
-    elements = []
-    for m in modifiers.keys():
-        if not getattr(kmi, m):
-            continue
-        elements.append(modifiers[m])
-
+    elements = [value for m, value in modifiers.items() if getattr(kmi, m)]
     elements.append(kmi.type)
     return " + ".join(elements)
 
@@ -36,7 +31,7 @@ def _get_matching_kmi(
     km_items = []
     for km in kc.keymaps:
         for kmi in km.keymap_items:
-            if not kmi.idname == id_name:
+            if kmi.idname != id_name:
                 continue
             if kmi.type in ("LEFTMOUSE", "MIDDLEMOUSE", "RIGHTMOUSE"):
                 continue
@@ -75,20 +70,18 @@ def get_key_map_desc(context: Context, id_name: str) -> str:
             continue
         hints.append(hint)
 
-    return "({})".format(", ".join(hints))
+    return f'({", ".join(hints)})'
 
 
 def _tool_numeric_invoke_km(operator: str):
-    km = []
-    for event in numeric_events:
-        km.append(
-            (
-                operator,
-                {"type": event, "value": "PRESS"},
-                None,
-            )
+    return [
+        (
+            operator,
+            {"type": event, "value": "PRESS"},
+            None,
         )
-    return km
+        for event in numeric_events
+    ]
 
 
 def operator_access(operator: str):

@@ -6,8 +6,7 @@ def index_to_rgb(i: int):
 
 
 def rgb_to_index(r: int, g: int, b: int) -> int:
-    i = int(r * 255 + g * 255 * 256 + b * 255 * 256 * 256)
-    return i
+    return int(r * 255 + g * 255 * 256 + b * 255 * 256 * 256)
 
 
 def breakdown_index(index: int):

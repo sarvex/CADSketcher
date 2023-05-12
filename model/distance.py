@@ -119,9 +119,7 @@ class SlvsDistance(DimensionalConstraint, PropertyGroup):
         """Returns True if constraint's entities allow distance to be aligned"""
         if type(self.entity2) in (*LINE, SlvsWorkplane):
             return False
-        if self.entity1.is_curve():
-            return False
-        return True
+        return not self.entity1.is_curve()
 
     def is_align(self):
         """Returns True if constraint is aligned"""
@@ -129,9 +127,7 @@ class SlvsDistance(DimensionalConstraint, PropertyGroup):
 
     def get_value(self):
         value = self.value
-        if self.use_flipping() and self.flip:
-            return value * -1
-        return value
+        return value * -1 if self.use_flipping() and self.flip else value
 
     def create_slvs_data(self, solvesys, group=Solver.group_fixed):
         if self.entity1 == self.entity2:
@@ -153,16 +149,14 @@ class SlvsDistance(DimensionalConstraint, PropertyGroup):
 
         # circle/arc -> line/point
         if type(e1) in CURVE:
-            # TODO: make Horizontal and Vertical alignment work
             if type(e2) in LINE:
                 return solvesys.addPointLineDistance(
                     value + e1.radius, e1.ct.py_data, e2.py_data, wp, group
                 )
-            else:
-                assert isinstance(e2, SlvsPoint2D)
-                return solvesys.addPointsDistance(
-                    value + e1.radius, e1.ct.py_data, e2.py_data, wp, group
-                )
+            assert isinstance(e2, SlvsPoint2D)
+            return solvesys.addPointsDistance(
+                value + e1.radius, e1.ct.py_data, e2.py_data, wp, group
+            )
 
         elif type(e2) in LINE:
             func = solvesys.addPointLineDistance
@@ -170,7 +164,7 @@ class SlvsDistance(DimensionalConstraint, PropertyGroup):
         elif isinstance(e2, SlvsWorkplane):
             func = solvesys.addPointPlaneDistance
         elif type(e2) in POINT:
-            if align and all([e.is_2d() for e in (e1, e2)]):
+            if align and all(e.is_2d() for e in (e1, e2)):
                 # Get Point in between
                 p1, p2 = e1.co, e2.co
                 coords = (p2.x, p1.y)
@@ -178,13 +172,14 @@ class SlvsDistance(DimensionalConstraint, PropertyGroup):
                 params = [solvesys.addParamV(v, group) for v in coords]
                 p = solvesys.addPoint2d(wp, *params, group=group)
 
-                handles.append(
-                    solvesys.addPointsHorizontal(p, e2.py_data, wp, group=group)
+                handles.extend(
+                    (
+                        solvesys.addPointsHorizontal(
+                            p, e2.py_data, wp, group=group
+                        ),
+                        solvesys.addPointsVertical(p, e1.py_data, wp, group=group),
+                    )
                 )
-                handles.append(
-                    solvesys.addPointsVertical(p, e1.py_data, wp, group=group)
-                )
-
                 base_point = e1 if alignment == "VERTICAL" else e2
                 handles.append(
                     solvesys.addPointsDistance(
@@ -280,10 +275,7 @@ class SlvsDistance(DimensionalConstraint, PropertyGroup):
                         if alignment == "HORIZONTAL"
                         else Vector((0.0, 1.0))
                     )
-                if v_rotation.length != 0:
-                    angle = v_rotation.angle_signed(x_axis)
-                else:
-                    angle = 0
+                angle = v_rotation.angle_signed(x_axis) if v_rotation.length != 0 else 0
                 mat_rot = Matrix.Rotation(angle, 2, "Z")
                 v_translation = (p2 + p1) / 2
             else:

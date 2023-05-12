@@ -47,7 +47,7 @@ class View3D_OT_slvs_add_point3d(Operator, Operator3d):
 
     def fini(self, context: Context, succeede: bool):
         if hasattr(self, "target"):
-            logger.debug("Add: {}".format(self.target))
+            logger.debug(f"Add: {self.target}")
 
 
 register, unregister = register_stateops_factory((View3D_OT_slvs_add_point3d,))

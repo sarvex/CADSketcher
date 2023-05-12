@@ -35,10 +35,8 @@ class GenericConstraintOp(Operator2d):
         entities = [None] * len(cls.signature)
         for i, name in enumerate(self._entity_prop_names):
             if hasattr(self, name):
-                e = getattr(self, name)
-                if not e:
-                    continue
-                entities[i] = e
+                if e := getattr(self, name):
+                    entities[i] = e
         return entities
 
     @classmethod
@@ -59,9 +57,9 @@ class GenericConstraintOp(Operator2d):
 
             states.append(
                 state_from_args(
-                    "Entity " + str(name_index),
+                    f"Entity {str(name_index)}",
                     description=state_docstr,
-                    pointer="entity" + str(name_index),
+                    pointer=f"entity{str(name_index)}",
                     property=None,
                     types=types,
                 )
@@ -71,12 +69,11 @@ class GenericConstraintOp(Operator2d):
     def get_settings(self) -> dict:
         """Return a dictionary with settings that are already set"""
 
-        settings = {}
-        for name in self.property_keys:
-            if not self.properties.is_property_set(name):
-                continue
-            settings[name] = getattr(self, name)
-        return settings
+        return {
+            name: getattr(self, name)
+            for name in self.property_keys
+            if self.properties.is_property_set(name)
+        }
 
     def sync_settings(self):
         """Sync operator properties that are not set with constraint's properties"""
@@ -112,7 +109,7 @@ class GenericConstraintOp(Operator2d):
 
     def fini(self, context: Context, succeede: bool):
         if hasattr(self, "target"):
-            logger.debug("Add: {}".format(self.target))
+            logger.debug(f"Add: {self.target}")
 
     def draw(self, context: Context):
         layout = self.layout

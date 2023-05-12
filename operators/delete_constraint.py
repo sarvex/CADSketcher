@@ -27,9 +27,7 @@ class View3D_OT_slvs_delete_constraint(Operator, HighlightElement):
     @classmethod
     def description(cls, context, properties):
         cls.handle_highlight_hover(context, properties)
-        if properties.type:
-            return "Delete: " + properties.type.capitalize()
-        return ""
+        return f"Delete: {properties.type.capitalize()}" if properties.type else ""
 
     def execute(self, context: Context):
         constraints = context.scene.sketcher.constraints
@@ -38,7 +36,7 @@ class View3D_OT_slvs_delete_constraint(Operator, HighlightElement):
         # constraint from its index before deleting
 
         constr = constraints.get_from_type_index(self.type, self.index)
-        logger.debug("Delete: {}".format(constr))
+        logger.debug(f"Delete: {constr}")
 
         constraints.remove(constr)
 

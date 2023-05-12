@@ -74,8 +74,7 @@ def draw_cube_3d(cx: float, cy: float, cz: float, width: float):
     coords = []
     for x in (cx - half_width, cx + half_width):
         for y in (cy - half_width, cy + half_width):
-            for z in (cz - half_width, cz + half_width):
-                coords.append((x, y, z))
+            coords.extend((x, y, z) for z in (cz - half_width, cz + half_width))
     # order: ((-x, -y, -z), (-x, -y, +z), (-x, +y, -z), ...)
     indices = (
         *tris_from_quad_ids(0, 1, 2, 3),

@@ -138,10 +138,7 @@ class SlvsArc(Entity2D, PropertyGroup):
 
     def direction(self, point, is_endpoint=False):
         """Returns the direction of the line, true if inverted"""
-        if is_endpoint:
-            return point == self.start
-        else:
-            return point == self.end
+        return point == self.start if is_endpoint else point == self.end
 
     def bezier_segment_count(self):
         max_angle = QUARTER_TURN
@@ -265,26 +262,15 @@ class SlvsArc(Entity2D, PropertyGroup):
         a1 = range_2pi(p.angle_signed(p1))
         a2 = range_2pi(p2.angle_signed(p))
 
-        angle = self.angle
-
-        if not p.length or not p1.length or not p2.length:
-            return False
-
-        if a1 < angle > a2:
-            return True
-        return False
+        return a1 < self.angle > a2 if p.length and p1.length and p2.length else False
 
     def overlaps_endpoint(self, co):
         precision = 5
         co_rounded = round_v(co, ndigits=precision)
-        if any(
-            [
-                co_rounded == round_v(v, ndigits=precision)
-                for v in (self.p1.co, self.p2.co)
-            ]
-        ):
-            return True
-        return False
+        return any(
+            co_rounded == round_v(v, ndigits=precision)
+            for v in (self.p1.co, self.p2.co)
+        )
 
     def intersect(self, other):
         def parse_retval(retval):
@@ -331,9 +317,7 @@ class SlvsArc(Entity2D, PropertyGroup):
         len_2 = range_2pi((points[0] - ct).angle_signed(start))
 
         threshold = 0.000001
-        retval = (len_1 + len_2) % (self.angle + threshold)
-
-        return retval
+        return (len_1 + len_2) % (self.angle + threshold)
 
     def replace(self, context, p1, p2, use_self=False):
         if use_self:

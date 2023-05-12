@@ -19,6 +19,6 @@ class VIEW3D_T_slvs_add_line2d(GenericStateTool, WorkSpaceTool):
         *operator_access(Operators.AddLine2D),
     )
 
-    def draw_settings(context, layout, tool):
+    def draw_settings(self, layout, tool):
         props = tool.operator_properties(Operators.AddLine2D)
         layout.prop(props, "continuous_draw")

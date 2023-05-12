@@ -27,8 +27,7 @@ def dict_extend(original_dict, other):
 
 def scene_to_dict(scene):
     original = scene["sketcher"].to_dict()
-    elements = {key: original[key] for key in ("entities", "constraints")}
-    return elements
+    return {key: original[key] for key in ("entities", "constraints")}
 
 
 def scene_from_dict(scene, elements):
@@ -64,7 +63,7 @@ def fix_pointers(elements):
 
         for i in range(len(local_indices)):
             old_index = local_indices[i]
-            if old_index in index_mapping.keys():
+            if old_index in index_mapping:
                 continue
 
             index_mapping[assemble_index(type_index, old_index)] = assemble_index(
@@ -80,8 +79,7 @@ def iter_elements_dict(element_dict):
         for element_coll, elems in element_dict[element_key].items():
             if not isinstance(elems, list):
                 continue
-            for elem in elems:
-                yield elem
+            yield from elems
 
 
 def _replace_indices(elements, mapping: dict):
@@ -93,10 +91,8 @@ def _replace_indices(elements, mapping: dict):
                 continue
 
             value = elem[prop]
-            if value not in mapping.keys():
-                continue
-
-            elem[prop] = mapping[value]
+            if value in mapping:
+                elem[prop] = mapping[value]
 
 
 def _get_indices(elements):

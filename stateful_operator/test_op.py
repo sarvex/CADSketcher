@@ -31,8 +31,7 @@ class View3D_OT_slvs_test(Operator, StatefulOperator):
     )
 
     def main(self, context: Context):
-        element = self.element
-        if element:
-            self.report({"INFO"}, "Picked element " + str(element))
+        if element := self.element:
+            self.report({"INFO"}, f"Picked element {str(element)}")
             return True
         return False

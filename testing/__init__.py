@@ -46,8 +46,8 @@ if __name__ == "__main__":
         if "-i" in args or "--interactive" in args:
             interactive = True
 
-        if "--log_level" in kwargs.keys():
+        if "--log_level" in kwargs:
             log_level = kwargs["--log_level"]
 
-    print("args: {}\nkwargs: {}".format(args, kwargs))
+    print(f"args: {args}\nkwargs: {kwargs}")
     run(interactive, log_level)

@@ -100,9 +100,7 @@ class SlvsEntities(PropertyGroup):
 
         type_index, _ = self._breakdown_index(index)
 
-        if type_index >= len(self.entities):
-            return None
-        return self.entities[type_index]
+        return None if type_index >= len(self.entities) else self.entities[type_index]
 
     def collection_name_from_index(self, index: int):
         if index < 0:
@@ -129,9 +127,7 @@ class SlvsEntities(PropertyGroup):
         if index == -1:
             return None
         sub_list, i = self._get_list_and_index(index)
-        if not sub_list or i >= len(sub_list):
-            return None
-        return sub_list[i]
+        return None if not sub_list or i >= len(sub_list) else sub_list[i]
 
     def remove(self, index: int):
         """Remove entity by index
@@ -155,7 +151,7 @@ class SlvsEntities(PropertyGroup):
         if i > last_index:
             return
 
-        if not i == last_index:  # second last item was deleted
+        if i != last_index:  # second last item was deleted
             entity_list.move(last_index, i)
 
         new_item = entity_list[i]
@@ -347,9 +343,7 @@ class SlvsEntities(PropertyGroup):
     @property
     def all(self):
         for coll_name in self._entity_collections:
-            entity_coll = getattr(self, coll_name)
-            for entity in entity_coll:
-                yield entity
+            yield from getattr(self, coll_name)
 
     @property
     def selected(self):
@@ -415,10 +409,10 @@ class SlvsEntities(PropertyGroup):
             setattr(self, wp_name, wp)
 
     def collection_offsets(self):
-        offsets = {}
-        for i, key in enumerate(self._entity_collections):
-            offsets[i] = len(getattr(self, key))
-        return offsets
+        return {
+            i: len(getattr(self, key))
+            for i, key in enumerate(self._entity_collections)
+        }
 
 
 if not hasattr(SlvsEntities, "__annotations__"):

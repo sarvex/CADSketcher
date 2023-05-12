@@ -62,11 +62,11 @@ def get_2d_coords(context, pos: Vector) -> Vector:
 
 
 def get_scale_from_pos(co: Vector, rv3d: RegionView3D) -> Vector:
-    if rv3d.view_perspective == "ORTHO":
-        scale = rv3d.view_distance
-    else:
-        scale = (rv3d.perspective_matrix @ co.to_4d())[3]
-    return scale
+    return (
+        rv3d.view_distance
+        if rv3d.view_perspective == "ORTHO"
+        else (rv3d.perspective_matrix @ co.to_4d())[3]
+    )
 
 
 def refresh(context: Context):

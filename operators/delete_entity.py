@@ -63,9 +63,7 @@ class View3D_OT_slvs_delete_entity(Operator, HighlightElement):
 
                 operator.report(
                     {"WARNING"},
-                    "Cannot delete {}, other entities depend on it.".format(
-                        entity.name
-                    ),
+                    f"Cannot delete {entity.name}, other entities depend on it.",
                 )
             return {"CANCELLED"}
 
@@ -84,10 +82,10 @@ class View3D_OT_slvs_delete_entity(Operator, HighlightElement):
             if not indices:
                 continue
             for i in indices:
-                logger.debug("Delete: {}".format(data_coll[i]))
+                logger.debug(f"Delete: {data_coll[i]}")
                 data_coll.remove(i)
 
-        logger.debug("Delete: {}".format(entity))
+        logger.debug(f"Delete: {entity}")
         entities = context.scene.sketcher.entities
         entities.remove(entity.slvs_index)
 
@@ -102,11 +100,7 @@ class View3D_OT_slvs_delete_entity(Operator, HighlightElement):
             # Treat single selection same as specified entity
             self.main(context, selected[0].slvs_index, self)
         else:
-            # Batch deletion
-            indices = []
-            for e in selected:
-                indices.append(e.slvs_index)
-
+            indices = [e.slvs_index for e in selected]
             indices.sort(reverse=True)
             for i in indices:
                 e = context.scene.sketcher.entities.get(i)

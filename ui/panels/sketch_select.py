@@ -10,22 +10,20 @@ def sketch_selector(
 ):
     row = layout.row(align=True)
     row.scale_y = 1.8
-    active_sketch = context.scene.sketcher.active_sketch
-
-    if not active_sketch:
-        row.operator(
-            declarations.Operators.AddSketch,
-            icon="ADD"
-        ).wait_for_input = True
-
-    else:
+    if active_sketch := context.scene.sketcher.active_sketch:
         row.operator(
             declarations.Operators.SetActiveSketch,
-            text="Leave: " + active_sketch.name,
+            text=f"Leave: {active_sketch.name}",
             icon="BACK",
             depress=True,
         ).index = -1
         row.active = True
+
+    else:
+        row.operator(
+            declarations.Operators.AddSketch,
+            icon="ADD"
+        ).wait_for_input = True
 
     row.operator(declarations.Operators.Update, icon="FILE_REFRESH", text="")
 
@@ -40,11 +38,10 @@ class VIEW3D_PT_sketcher(VIEW3D_PT_sketcher_base):
         layout = self.layout
 
         sketch_selector(context, layout)
-        sketch = context.scene.sketcher.active_sketch
         layout.use_property_split = True
         layout.use_property_decorate = False
 
-        if sketch:
+        if sketch := context.scene.sketcher.active_sketch:
             # Sketch is selected, show info about the sketch itself
             row = layout.row()
             row.alignment = "CENTER"
@@ -64,7 +61,7 @@ class VIEW3D_PT_sketcher(VIEW3D_PT_sketcher_base):
                 dof_msg = (
                     "Fully defined sketch"
                     if dof_ok
-                    else "Degrees of freedom: " + str(dof)
+                    else f"Degrees of freedom: {str(dof)}"
                 )
                 dof_icon = "CHECKMARK" if dof_ok else "ERROR"
                 row.label(text=dof_msg, icon=dof_icon)

@@ -33,7 +33,7 @@ class VIEW3D_OT_slvs_add_coincident(Operator, GenericConstraintOp):
     def handle_merge(self, context):
         points = self.entity1, self.entity2
 
-        if not all([e.is_point() for e in points]):
+        if not all(e.is_point() for e in points):
             return False
 
         for p1, p2 in (points, reversed(points)):

@@ -24,10 +24,8 @@ class SlvsVertical(GenericConstraint, PropertyGroup):
 
     @classmethod
     def get_types(cls, index, entities):
-        if index == 1:
-            # return None if first entity is line
-            if entities[0] and entities[0].is_line():
-                return None
+        if index == 1 and entities[0] and entities[0].is_line():
+            return None
 
         return cls.signature[index]
 

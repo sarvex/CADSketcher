@@ -21,9 +21,7 @@ class View3D_OT_slvs_context_menu(Operator, HighlightElement):
     @classmethod
     def description(cls, context: Context, properties: PropertyGroup):
         cls.handle_highlight_hover(context, properties)
-        if properties.type:
-            return properties.type.capitalize()
-        return cls.__doc__
+        return properties.type.capitalize() if properties.type else cls.__doc__
 
     def invoke(self, context: Context, event: Event):
         if not self.delayed:
@@ -33,9 +31,7 @@ class View3D_OT_slvs_context_menu(Operator, HighlightElement):
         return {"RUNNING_MODAL"}
 
     def modal(self, context: Context, event: Event):
-        if event.value == "RELEASE":
-            return self.execute(context)
-        return {"RUNNING_MODAL"}
+        return self.execute(context) if event.value == "RELEASE" else {"RUNNING_MODAL"}
 
     def execute(self, context: Context):
         is_entity = True

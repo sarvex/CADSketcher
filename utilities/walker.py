@@ -35,10 +35,7 @@ def point_entity_mapping(scene):
 
 def shares_point(seg_1, seg_2):
     points = seg_1.connection_points()
-    for p in seg_2.connection_points():
-        if p in points:
-            return True
-    return False
+    return any(p in points for p in seg_2.connection_points())
 
 
 class EntityWalker:
@@ -96,9 +93,7 @@ class EntityWalker:
     def walker(self, entity, path, ignore_point=None, invert=False):
         segments = path[0]
         logger.debug(
-            "goto: {} entrypoint: {} invert_walker {}".format(
-                entity, ignore_point, invert
-            )
+            f"goto: {entity} entrypoint: {ignore_point} invert_walker {invert}"
         )
 
         if invert:
@@ -161,5 +156,5 @@ class EntityWalker:
     def _run(self):
         while len(self.sketch_entities):
             start_entity = self.sketch_entities[0]
-            logger.info("Start path walker at {}".format(start_entity))
+            logger.info(f"Start path walker at {start_entity}")
             self.walker(start_entity, self._branch_path())

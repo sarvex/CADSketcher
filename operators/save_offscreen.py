@@ -40,7 +40,7 @@ class VIEW3D_OT_slvs_write_selection_texture(Operator):
             return {"CANCELLED"}
 
         image = write_selection_buffer_image("selection_buffer")
-        self.report({"INFO"}, "Wrote buffer to image: {}".format(image.name))
+        self.report({"INFO"}, f"Wrote buffer to image: {image.name}")
 
         return {"FINISHED"}
 

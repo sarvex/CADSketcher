@@ -43,7 +43,7 @@ class View3D_OT_slvs_select(Operator, HighlightElement):
             value = True
             if mode == "SUBTRACT":
                 value = False
-            if mode == "TOGGLE":
+            elif mode == "TOGGLE":
                 value = not entity.selected
 
             entity.selected = value

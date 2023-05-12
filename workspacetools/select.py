@@ -14,6 +14,6 @@ class VIEW3D_T_slvs_select(WorkSpaceTool):
     bl_widget = GizmoGroups.Preselection
     bl_keymap = tool_select
 
-    def draw_settings(context, layout, tool):
+    def draw_settings(self, layout, tool):
         props = tool.operator_properties(Operators.Select)
         layout.prop(props, "mode", text="", expand=True, icon_only=True)

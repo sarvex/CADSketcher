@@ -76,8 +76,7 @@ class SlvsAngle(DimensionalConstraint, PropertyGroup):
             "group": group,
         }
 
-        wp = self.get_workplane()
-        if wp:
+        if wp := self.get_workplane():
             kwargs["wrkpln"] = wp
 
         return solvesys.addAngle(

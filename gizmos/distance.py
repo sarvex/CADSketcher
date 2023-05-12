@@ -62,10 +62,6 @@ class VIEW3D_GT_slvs_distance(Gizmo, ConstraintGizmoGeneric):
                 targetpoint, _ = intersect_point_line(
                     centerpoint, entity2.p1.co, entity2.p2.co
                 )
-            else:
-                # TODO: Handle the case for SlvsWorkplane
-                pass
-
             targetvec = targetpoint - centerpoint
             points_local.append(get_local(
                 centerpoint + entity1.radius * targetvec / targetvec.length

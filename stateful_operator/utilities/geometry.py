@@ -17,11 +17,11 @@ def get_placement_pos(context: Context, coords: Vector) -> Vector:
 
 
 def get_scale_from_pos(co: Vector, rv3d: RegionView3D) -> Vector:
-    if rv3d.view_perspective == "ORTHO":
-        scale = rv3d.view_distance
-    else:
-        scale = (rv3d.perspective_matrix @ co.to_4d())[3]
-    return scale
+    return (
+        rv3d.view_distance
+        if rv3d.view_perspective == "ORTHO"
+        else (rv3d.perspective_matrix @ co.to_4d())[3]
+    )
 
 
 def get_evaluated_obj(context: Context, object: Object):
@@ -75,11 +75,7 @@ def get_mesh_element(
         return index_min, deltas[index_min]
 
     def is_closer(distance, min_distance):
-        if min_distance is None:
-            return True
-        if distance < min_distance:
-            return True
-        return False
+        return True if min_distance is None else distance < min_distance
 
     if vertex:
         i, dist = get_closest(
@@ -103,11 +99,9 @@ def get_mesh_element(
             closest_index = face_edge_map[polygon.edge_keys[i]].index
             closest_dist = dist
 
-    if face:
-        # Check if face midpoint is closest
-        if is_closer((polygon.center - loc).length, closest_dist):
-            closest_type = "FACE"
-            closest_index = face_index
+    if face and is_closer((polygon.center - loc).length, closest_dist):
+        closest_type = "FACE"
+        closest_index = face_index
 
     if closest_type:
         return ob, closest_type, closest_index

@@ -54,19 +54,14 @@ class StatefulOperatorLogic:
         else:
             return None
 
-        retval = to_list(props)
-        return retval
+        return to_list(props)
 
     @classmethod
     def get_states_definition(cls):
-        if callable(cls.states):
-            return cls.states()
-        return cls.states
+        return cls.states() if callable(cls.states) else cls.states
 
     def get_states(self):
-        if callable(self.states):
-            return self.states(operator=self)
-        return self.states
+        return self.states(operator=self) if callable(self.states) else self.states
 
     @property
     def state(self):
@@ -104,21 +99,21 @@ class StatefulOperatorLogic:
 
         msg = state_desc(state.name, desc, state.types)
         if self.state_data.get("is_numeric_edit", False):
-            index = self._substate_index
             prop = self._stateprop
             type = prop.type
-            array_length = prop.array_length if prop.array_length else 1
             if type == "FLOAT":
+                array_length = prop.array_length if prop.array_length else 1
                 input = [0.0] * array_length
                 for key, val in self._numeric_input.items():
                     input[key] = val
 
-                input[index] = "*" + str(input[index])
+                index = self._substate_index
+                input[index] = f"*{str(input[index])}"
                 input = str(input).replace('"', "").replace("'", "")
             elif type == "INT":
                 input = self.numeric_input
 
-            msg += "    {}: {}".format(prop.subtype, input)
+            msg += f"    {prop.subtype}: {input}"
 
         context.workspace.status_text_set(msg)
 
@@ -139,9 +134,7 @@ class StatefulOperatorLogic:
             return False
 
         prop = self.properties.rna_type.properties[prop_name]
-        if prop.type not in ("INT", "FLOAT"):
-            return False
-        return True
+        return prop.type in ("INT", "FLOAT")
 
     def init_numeric(self, is_numeric):
         self._numeric_input = {}
@@ -184,17 +177,16 @@ class StatefulOperatorLogic:
         self._numeric_input[self._substate_index] = value
 
     def check_event(self, event):
-        state = self.state
         is_confirm_button = event.type in ("LEFTMOUSE", "RET", "NUMPAD_ENTER")
 
         if is_confirm_button and event.value == "PRESS":
             return True
-        if self.state_index == 0 and not self.wait_for_input:
-            # Trigger the first state
-            return not self.state_data.get("is_numeric_edit", False)
-        if state.no_event:
-            return True
-        return False
+        state = self.state
+        return (
+            not self.state_data.get("is_numeric_edit", False)
+            if self.state_index == 0 and not self.wait_for_input
+            else bool(state.no_event)
+        )
 
     def evaluate_numeric_event(self, event: Event):
         type = event.type
@@ -204,10 +196,7 @@ class StatefulOperatorLogic:
                 self.numeric_input = input[:-1]
         elif type in ("MINUS", "NUMPAD_MINUS"):
             input = self.numeric_input
-            if input.startswith("-"):
-                input = input[1:]
-            else:
-                input = "-" + input
+            input = input[1:] if input.startswith("-") else f"-{input}"
             self.numeric_input = input
         elif is_unit_input(event):
             self.numeric_input += get_unit_value(event)
@@ -229,21 +218,19 @@ class StatefulOperatorLogic:
         selected = self.gather_selection(context)
         states = self.get_states_definition()
 
+        coords = None
+
         # Iterate states and try to prefill state props
         while True:
             index = self.state_index
             result = None
             state = self.state
             data = self.get_state_data(index)
-            coords = None
-
             if not state.allow_prefill:
                 break
 
             func = self.get_func(state, "parse_selection")
-            result = func(context, selected, index=index)
-
-            if result:
+            if result := func(context, selected, index=index):
                 if not self.next_state(context):
                     return {"FINISHED"}
                 continue
@@ -260,18 +247,9 @@ class StatefulOperatorLogic:
         return self._state_data[index]
 
     def get_func(self, state, name):
-        # fallback to operator method if function isn't specified by state
-        func = getattr(state, name, None)
-
-        if func:
-            if isinstance(func, str):
-                # callback can be specified by function name
-                return getattr(self, func)
-            return func
-
-        if hasattr(self, name):
-            return getattr(self, name)
-        return None
+        if func := getattr(state, name, None):
+            return getattr(self, func) if isinstance(func, str) else func
+        return getattr(self, name) if hasattr(self, name) else None
 
     def has_func(self, state, name):
         return self.get_func(state, name) is not None
@@ -319,12 +297,6 @@ class StatefulOperatorLogic:
             return retval
 
         succeede = retval == {"FINISHED"}
-        if succeede:
-            # NOTE: It seems like there's no undo step pushed if an operator finishes from invoke
-            # could push an undo_step here however this causes duplicated constraints after redo,
-            # disable for now
-            # bpy.ops.ed.undo_push()
-            pass
         return self._end(context, succeede)
 
     def run_op(self, context: Context):
@@ -387,9 +359,7 @@ class StatefulOperatorLogic:
             elif type == "INT":
                 value = int(input)
 
-            if value is None:
-                return prop.default
-            return value
+            return prop.default if value is None else value
 
         size = max(1, self._substate_count)
 
@@ -425,9 +395,7 @@ class StatefulOperatorLogic:
 
         self.state_data["numeric_input"] = storage
 
-        if not self._substate_count:
-            return result[0]
-        return result
+        return result[0] if not self._substate_count else result
 
     def _handle_pass_through(self, context: Context, event: Event):
         # Only pass through navigation events
@@ -467,12 +435,8 @@ class StatefulOperatorLogic:
                 pass
             elif is_mousemove and is_numeric_edit:
                 event_triggered = False
-                pass
-            elif not state.interactive:
+            elif not state.interactive or not is_mousemove:
                 return self._handle_pass_through(context, event)
-            elif not is_mousemove:
-                return self._handle_pass_through(context, event)
-
         # TODO: Disable numeric input when no state.property
         if is_numeric_event:
             self.evaluate_numeric_event(event)
@@ -483,10 +447,7 @@ class StatefulOperatorLogic:
     def _get_state_values(self, context: Context, state, coords):
         # Get values of state_func, can be none
         position_cb = self.get_func(state, "state_func")
-        if not position_cb:
-            return None
-        pos_val = position_cb(context, coords)
-        return pos_val
+        return None if not position_cb else position_cb(context, coords)
 
     def evaluate_state(self, context: Context, event, triggered):
         state = self.state
@@ -518,12 +479,11 @@ class StatefulOperatorLogic:
                 values = [
                     self.get_numeric_value(context, coords),
                 ]
-            elif not is_picked:
+            else:
                 values = to_list(self._get_state_values(context, state, coords))
 
             if values:
-                props = self.get_property()
-                if props:
+                if props := self.get_property():
                     for i, v in enumerate(values):
                         setattr(self, props[i], v)
                     self._undo = True
@@ -545,7 +505,7 @@ class StatefulOperatorLogic:
                 ok = True
 
         if self._undo:
-            bpy.ops.ed.undo_push(message="Redo: " + self.bl_label)
+            bpy.ops.ed.undo_push(message=f"Redo: {self.bl_label}")
             bpy.ops.ed.undo()
             global_data.ignore_list.clear()
             self.redo_states(context)
@@ -578,10 +538,10 @@ class StatefulOperatorLogic:
         return self._handle_pass_through(context, event)
 
     def check_continuous_draw(self):
-        if self.continuous_draw:
-            if not hasattr(self, "continue_draw") or self.continue_draw():
-                return True
-        return False
+        return bool(
+            self.continuous_draw
+            and (not hasattr(self, "continue_draw") or self.continue_draw())
+        )
 
     def _reset_op(self):
         self.executed = False
@@ -628,11 +588,10 @@ class StatefulOperatorLogic:
         context.workspace.status_text_set(None)
 
         if not succeede and not skip_undo:
-            bpy.ops.ed.undo_push(message="Cancelled: " + self.bl_label)
+            bpy.ops.ed.undo_push(message=f"Cancelled: {self.bl_label}")
             bpy.ops.ed.undo()
 
-        retval = {"FINISHED"} if succeede else {"CANCELLED"}
-        return retval
+        return {"FINISHED"} if succeede else {"CANCELLED"}
 
     def check_props(self):
         for i, state in enumerate(self.get_states()):
@@ -654,8 +613,7 @@ class StatefulOperatorLogic:
             for s in cls.get_states_definition()
         ]
         descs = []
-        hint = get_key_map_desc(context, cls.bl_idname)
-        if hint:
+        if hint := get_key_map_desc(context, cls.bl_idname):
             descs.append(hint)
 
         if cls.__doc__:

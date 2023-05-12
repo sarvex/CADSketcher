@@ -16,4 +16,4 @@ def load():
         return
 
     bpy.ops.preferences.asset_library_add(directory=asset_path)
-    logger.info("Add asset library: " + asset_path)
+    logger.info(f"Add asset library: {asset_path}")

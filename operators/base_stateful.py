@@ -45,18 +45,16 @@ class GenericEntityOp(StatefulOperator):
             hovered = context.scene.sketcher.entities.get(index)
             constraints = context.scene.sketcher.constraints
 
-            sketch = None
-            if hasattr(self, "sketch"):
-                sketch = self.sketch
+            sketch = self.sketch if hasattr(self, "sketch") else None
             state_data["coincident"] = constraints.add_coincident(
                 point, hovered, sketch=sketch
             )
 
     def has_coincident(self):
-        for state_index, data in self._state_data.items():
-            if data.get("coincident", None):
-                return True
-        return False
+        return any(
+            data.get("coincident", None)
+            for state_index, data in self._state_data.items()
+        )
 
     @classmethod
     def register_properties(cls):
@@ -76,22 +74,22 @@ class GenericEntityOp(StatefulOperator):
                 annotations = cls.__annotations__.copy()
 
             # handle SlvsPoint3D fallback props
-            if any([t == SlvsPoint3D for t in types]):
+            if any(t == SlvsPoint3D for t in types):
                 kwargs = {"size": 3, "subtype": "XYZ", "unit": "LENGTH"}
-                annotations[name + "_fallback"] = FloatVectorProperty(
+                annotations[f"{name}_fallback"] = FloatVectorProperty(
                     name=name, **kwargs
                 )
 
             # handle SlvsPoint2D fallback props
-            if any([t == SlvsPoint2D for t in types]):
+            if any(t == SlvsPoint2D for t in types):
                 kwargs = {"size": 2, "subtype": "XYZ", "unit": "LENGTH"}
-                annotations[name + "_fallback"] = FloatVectorProperty(
+                annotations[f"{name}_fallback"] = FloatVectorProperty(
                     name=name, **kwargs
                 )
 
-            if any([t == SlvsNormal3D for t in types]):
+            if any(t == SlvsNormal3D for t in types):
                 kwargs = {"size": 3, "subtype": "EULER", "unit": "ROTATION"}
-                annotations[name + "_fallback"] = FloatVectorProperty(
+                annotations[f"{name}_fallback"] = FloatVectorProperty(
                     name=name, **kwargs
                 )
 
@@ -106,24 +104,22 @@ class GenericEntityOp(StatefulOperator):
             setattr(cls, "__annotations__", annotations)
 
     def state_property(self, state_index):
-        # Return state_prop / properties. Handle multiple types
-        props = super().state_property(state_index)
-        if props:
+        if props := super().state_property(state_index):
             return props
 
         state = self.get_states_definition()[state_index]
 
-        pointer_name = state.pointer
-        if not pointer_name:
+        if pointer_name := state.pointer:
+            return (
+                f"{pointer_name}_fallback"
+                if any(issubclass(t, SlvsGenericEntity) for t in state.types)
+                else ""
+            )
+        else:
             return ""
 
-        if any([issubclass(t, SlvsGenericEntity) for t in state.types]):
-            return pointer_name + "_fallback"
-        return ""
-
     def get_state_pointer(self, index=Union[None, int], implicit=False):
-        retval = super().get_state_pointer(index=index, implicit=implicit)
-        if retval:
+        if retval := super().get_state_pointer(index=index, implicit=implicit):
             return retval
 
         # Creates pointer from its implicitly stored props
@@ -145,13 +141,12 @@ class GenericEntityOp(StatefulOperator):
             if implicit:
                 return i
 
-            if i == -1:
-                return None
-            return bpy.context.scene.sketcher.entities.get(i)
+            return None if i == -1 else bpy.context.scene.sketcher.entities.get(i)
 
     def set_state_pointer(self, values, index=None, implicit=False):
-        retval = super().set_state_pointer(values, index=index, implicit=implicit)
-        if retval:
+        if retval := super().set_state_pointer(
+            values, index=index, implicit=implicit
+        ):
             return retval
 
         # handles type specific setters

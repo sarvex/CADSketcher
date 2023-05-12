@@ -63,16 +63,12 @@ class SlvsDiameter(DimensionalConstraint, PropertyGroup):
     @property
     def diameter(self):
         value = self.value
-        if self.setting:
-            return value * 2
-        return value
+        return value * 2 if self.setting else value
 
     @property
     def radius(self):
         value = self.value
-        if self.setting:
-            return value
-        return value / 2
+        return value if self.setting else value / 2
 
     def needs_wp(self):
         return WpReq.OPTIONAL
@@ -82,9 +78,7 @@ class SlvsDiameter(DimensionalConstraint, PropertyGroup):
 
     def _get_init_value(self, setting):
         value = self.entity1.radius
-        if not setting:
-            return value * 2
-        return value
+        return value * 2 if not setting else value
 
     def init_props(self, **kwargs):
         setting = kwargs.get("setting", self.setting)

@@ -34,8 +34,7 @@ class SlvsPerpendicular(GenericConstraint, PropertyGroup):
         )
 
     def placements(self):
-        point = get_connection_point(self.entity1, self.entity2)
-        if point:
+        if point := get_connection_point(self.entity1, self.entity2):
             return (point,)
         return (self.entity1, self.entity2)
 

@@ -46,7 +46,7 @@ def set_log_level(self, value):
     item = items[value]
 
     level = item.identifier
-    logger.info("setting log level: {}".format(item.name))
+    logger.info(f"setting log level: {item.name}")
     self["logging_level"] = level
     logger.setLevel(level)
 
@@ -55,26 +55,23 @@ def get_wheel():
     p = Path(__file__).parent.absolute()
     from sys import platform, version_info
 
-    if platform == "linux" or platform == "linux2":
-        # Linux
-        platform_strig = "linux"
-    elif platform == "darwin":
+    if platform == "darwin":
         # OS X
         platform_strig = "macosx"
+    elif platform in ["linux", "linux2"]:
+        # Linux
+        platform_strig = "linux"
     elif platform == "win32":
         # Windows
         platform_strig = "win"
 
-    matches = list(
+    if matches := list(
         p.glob(
-            "**/*cp{}{}*{}*.whl".format(
-                version_info.major, version_info.minor, platform_strig
-            )
+            f"**/*cp{version_info.major}{version_info.minor}*{platform_strig}*.whl"
         )
-    )
-    if matches:
+    ):
         match = matches[0]
-        logger.info("Local installation file available: " + str(match))
+        logger.info(f"Local installation file available: {str(match)}")
         return match.as_posix()
     return ""
 
@@ -179,7 +176,7 @@ class Preferences(AddonPreferences):
         if global_data.registered:
             box.label(text="Registered", icon="CHECKMARK")
             module = sys.modules["py_slvs"]
-            box.label(text="Path: " + module.__path__[0])
+            box.label(text=f"Path: {module.__path__[0]}")
         else:
             row = box.row()
             row.label(text="Module isn't Registered", icon="CANCEL")

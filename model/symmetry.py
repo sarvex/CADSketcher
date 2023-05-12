@@ -36,9 +36,7 @@ class SlvsSymmetric(GenericConstraint, PropertyGroup):
     )
 
     def needs_wp(self):
-        if isinstance(self.entity3, SlvsLine2D):
-            return WpReq.NOT_FREE
-        return WpReq.FREE
+        return WpReq.NOT_FREE if isinstance(self.entity3, SlvsLine2D) else WpReq.FREE
 
     def create_slvs_data(self, solvesys, group=Solver.group_fixed):
         e1, e2, e3 = self.entity1, self.entity2, self.entity3

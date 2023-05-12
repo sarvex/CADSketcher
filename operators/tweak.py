@@ -29,9 +29,7 @@ class View3D_OT_slvs_tweak(Operator):
 
         if not hasattr(entity, "closest_picking_point"):
             if not hasattr(entity, "sketch"):
-                self.report(
-                    {"WARNING"}, "Cannot tweak element of type {}".format(type(entity))
-                )
+                self.report({"WARNING"}, f"Cannot tweak element of type {type(entity)}")
                 return {"CANCELLED"}
 
             # For 2D entities it should be enough precise to get picking point from

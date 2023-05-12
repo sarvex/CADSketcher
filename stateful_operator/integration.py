@@ -30,14 +30,12 @@ class StatefulOperator(StatefulOperatorLogic):
     @classmethod
     def _has_global_object(cls):
         states = cls.get_states_definition()
-        return any([s.pointer == "object" for s in states])
+        return any(s.pointer == "object" for s in states)
 
-    def _get_global_object_index(cls):
-        states = cls.get_states_definition()
+    def _get_global_object_index(self):
+        states = self.get_states_definition()
         object_in_list = [s.pointer == "object" for s in states]
-        if not any(object_in_list):
-            return None
-        return object_in_list.index(True)
+        return None if not any(object_in_list) else object_in_list.index(True)
 
     @classmethod
     def register_properties(cls):
@@ -71,9 +69,7 @@ class StatefulOperator(StatefulOperatorLogic):
         for a in annotations.keys():
             if hasattr(cls, a):
                 raise NameError(
-                    "Cannot register implicit pointer properties, class {} already has attribute of name {}".format(
-                        cls, a
-                    )
+                    f"Cannot register implicit pointer properties, class {cls} already has attribute of name {a}"
                 )
 
     def state_property(self, state_index):
@@ -108,24 +104,13 @@ class StatefulOperator(StatefulOperatorLogic):
             index = data["mesh_index"]
 
         if pointer_type == bpy.types.Object:
-            if implicit:
-                return obj_name
-            return obj
-
+            return obj_name if implicit else obj
         elif pointer_type == bpy.types.MeshVertex:
-            if implicit:
-                return obj_name, index
-            return obj.data.vertices[index]
-
+            return (obj_name, index) if implicit else obj.data.vertices[index]
         elif pointer_type == bpy.types.MeshEdge:
-            if implicit:
-                return obj_name, index
-            return obj.data.edges[index]
-
+            return (obj_name, index) if implicit else obj.data.edges[index]
         elif pointer_type == bpy.types.MeshPolygon:
-            if implicit:
-                return obj_name, index
-            return obj.data.polygons[index]
+            return (obj_name, index) if implicit else obj.data.polygons[index]
 
     def set_state_pointer(self, values, index=None, implicit=False):
         # handles type specific setters
@@ -139,15 +124,10 @@ class StatefulOperator(StatefulOperatorLogic):
         pointer_type = data["type"]
 
         def get_value(index):
-            if values is None:
-                return None
-            return values[index]
+            return None if values is None else values[index]
 
         if pointer_type == bpy.types.Object:
-            if implicit:
-                val = get_value(0)
-            else:
-                val = get_value(0).name
+            val = get_value(0) if implicit else get_value(0).name
             data["object_name"] = val
             return True
 
@@ -204,10 +184,9 @@ class StatefulOperator(StatefulOperatorLogic):
 
         global_ob = None
         if self._has_global_object():
-            global_ob_name = self._state_data[self._get_global_object_index()].get(
-                "object_name"
-            )
-            if global_ob_name:
+            if global_ob_name := self._state_data[
+                self._get_global_object_index()
+            ].get("object_name"):
                 global_ob = bpy.data.objects[global_ob_name]
 
         ob, type, index = get_mesh_element(context, coords, **types, object=global_ob)
@@ -235,7 +214,7 @@ class StatefulOperator(StatefulOperatorLogic):
         types = [s.types for s in states]
         # Note: Where to take mesh elements from? Editmode data is only written
         # when left probably making it impossible to use selected elements in realtime.
-        if any([t == bpy.types.Object for t in types]):
+        if bpy.types.Object in types:
             selected.extend(context.selected_objects)
 
         return selected

@@ -7,11 +7,13 @@ from mathutils.bvhtree import BVHTree
 def to_list(val):
     if val is None:
         return []
-    if type(val) in (list, tuple):
-        return list(val)
-    return [
-        val,
-    ]
+    return (
+        list(val)
+        if type(val) in (list, tuple)
+        else [
+            val,
+        ]
+    )
 
 
 def get_pointer_get_set(index: int):

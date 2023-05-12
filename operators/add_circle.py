@@ -55,8 +55,7 @@ class View3D_OT_slvs_add_circle2d(Operator, Operator2d):
         wp = self.sketch.wp
         pos = get_pos_2d(context, wp, coords)
         delta = Vector(pos) - self.ct.co
-        radius = delta.length
-        return radius
+        return delta.length
 
     def main(self, context: Context):
         wp = self.sketch.wp
@@ -71,11 +70,10 @@ class View3D_OT_slvs_add_circle2d(Operator, Operator2d):
 
     def fini(self, context: Context, succeede: bool):
         if hasattr(self, "target"):
-            logger.debug("Add: {}".format(self.target))
+            logger.debug(f"Add: {self.target}")
 
-        if succeede:
-            if self.has_coincident:
-                solve_system(context, sketch=self.sketch)
+        if succeede and self.has_coincident:
+            solve_system(context, sketch=self.sketch)
 
 
 register, unregister = register_stateops_factory((View3D_OT_slvs_add_circle2d,))

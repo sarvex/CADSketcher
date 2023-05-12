@@ -48,10 +48,8 @@ class SketcherProps(PropertyGroup):
     @property
     def all(self) -> Generator[Union[SlvsGenericEntity, SlvsConstraints], None, None]:
         """Iterate over entities and constraints of every type"""
-        for entity in self.entities.all:
-            yield entity
-        for constraint in self.constraints.all:
-            yield constraint
+        yield from self.entities.all
+        yield from self.constraints.all
 
     def solve(self, context: Context):
         return solve_system(context)
